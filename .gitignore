@@ -365,3 +365,6 @@ FodyWeavers.xsd
 # Trained model weights (generated)
 weights.bin
 temp_weights.bin
+
+# MNIST datasets (distributed separately, see README)
+MNIST_MLP/resources/lib_*.txt
