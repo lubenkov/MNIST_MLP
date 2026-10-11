@@ -5,13 +5,10 @@
 #include <QAtomicInt>
 #include "NeuralNetwork.h"
 #include "DataLoader.h"
-#include <vector>
-#include <functional>
-#include <QMutex>
 
 class Trainer : public QObject
 {
-    Q_OBJECT  
+    Q_OBJECT
 
 private:
     NeuralNetwork* network;
@@ -22,16 +19,9 @@ private:
     double finalLearningRate;
     int epochsBeforeDecay;
 
-    mutable QMutex statsMutex;  
-    std::vector<double> trainLossHistory;
-    std::vector<double> trainAccuracyHistory;
-    std::vector<double> testAccuracyHistory;
-
-    QAtomicInt stopRequested;   
+    QAtomicInt stopRequested;
 
     void updateLearningRate(int currentEpoch);
-    void printEpochStats(int epoch, double loss, double trainAcc, double testAcc);
-    void printFinalStats();
 
 public:
     explicit Trainer(NeuralNetwork* net, DataLoader* loader, QObject* parent = nullptr);
@@ -49,10 +39,6 @@ public slots:
     void stop();
 
     double test();
-
-    const std::vector<double>& getTrainLossHistory() const;
-    const std::vector<double>& getTrainAccuracyHistory() const;
-    const std::vector<double>& getTestAccuracyHistory() const;
 };
 
-#endif 
+#endif

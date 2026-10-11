@@ -1,9 +1,7 @@
 #include "MainWindow.h"
-#include <QGridLayout>
 #include <QGroupBox>
 #include <QFont>
 #include <QApplication>
-#include <QFileDialog>
 #include <QStyle>
 #include <QDebug>
 #include <QIcon>
@@ -22,7 +20,6 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , isTrained(false)
     , weightsLoaded(false)
-    , currentEpoch(0)
     , trainingThread(nullptr)
 {
     try {
@@ -417,11 +414,6 @@ void MainWindow::showError(const QString& title, const QString& message) {
     showStatusMessage("Error: " + message, 5000);
 }
 
-void MainWindow::showInfo(const QString& title, const QString& message) {
-    QMessageBox::information(this, title, message);
-    showStatusMessage(message, 3000);
-}
-
 void MainWindow::onTrainClicked()
 {
     if (trainingThread && trainingThread->isRunning()) {
@@ -610,9 +602,6 @@ void MainWindow::onImageChanged() {
 
 void MainWindow::updateProgress(int epoch, double loss, double trainAcc, double testAcc)
 {
-   
-    currentEpoch = epoch + 1;
-
     QString status = QString("Epoch %1/5 | Loss: %2 | Train: %3% | Test: %4%")
         .arg(epoch + 1)
         .arg(loss, 0, 'f', 4)

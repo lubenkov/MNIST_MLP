@@ -9,7 +9,6 @@
 #include <QHBoxLayout>
 #include <QProgressBar>
 #include <QMessageBox>
-#include <QFileDialog>
 #include <QStatusBar>
 #include <QMouseEvent>
 #include <QComboBox>
@@ -58,7 +57,6 @@ private:
     
     bool isTrained;
     bool weightsLoaded;
-    int currentEpoch;
 
     void setupUI();
     void setupTitleBar(QVBoxLayout* outerLayout);
@@ -96,7 +94,6 @@ private slots:
     void updateProgressPercent(int percent);
 
     void showError(const QString& title, const QString& message);
-    void showInfo(const QString& title, const QString& message);
     void showStatusMessage(const QString& message, int timeout = 3000);
 
 public:

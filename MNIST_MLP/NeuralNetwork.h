@@ -33,7 +33,6 @@ public:
     Eigen::VectorXd predict(const Eigen::VectorXd& input);
     Eigen::VectorXd softmax(const Eigen::VectorXd& z);
     double relu(double x);
-    double reluDerivative(double x);
 
     void backward(const Eigen::VectorXd& input,
         const Eigen::VectorXd& target,
@@ -50,8 +49,6 @@ public:
     void loadWeights(const std::string& filename);
 
     void setLearningRate(double lr);
-    double getLearningRate() const;
-    void setMomentum(double m);
 
     double testAccuracy(const std::vector<std::pair<Eigen::VectorXd, int>>& testData);
 };

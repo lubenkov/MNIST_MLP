@@ -14,7 +14,6 @@ bool DataLoader::loadTrainData(const std::string& filename) {
 
     trainData.clear();
     std::string line;
-    int samplesLoaded = 0;
     bool isDataSection = false;
 
     while (std::getline(file, line)) {
@@ -67,7 +66,6 @@ bool DataLoader::loadTrainData(const std::string& filename) {
         sample.image = normalizeImage(pixels);
 
         trainData.push_back(sample);
-        samplesLoaded++;
     }
 
     file.close();
@@ -87,7 +85,6 @@ bool DataLoader::loadTestData(const std::string& filename) {
 
     testData.clear();
     std::string line;
-    int samplesLoaded = 0;
     bool isDataSection = false;
 
     while (std::getline(file, line)) {
@@ -140,7 +137,6 @@ bool DataLoader::loadTestData(const std::string& filename) {
         sample.image = normalizeImage(pixels);
 
         testData.push_back(sample);
-        samplesLoaded++;
     }
 
     file.close();

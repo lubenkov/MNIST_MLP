@@ -169,14 +169,6 @@ Eigen::VectorXd DrawingArea::preprocessImage() const {
     return result;
 }
 
-void DrawingArea::setPenSize(int size) {
-    if (size < 1 || size > 50) {
-        throw std::runtime_error("Pen size must be between 1 and 50, got " +
-            std::to_string(size));
-    }
-    penSize = size;
-}
-
 void DrawingArea::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);

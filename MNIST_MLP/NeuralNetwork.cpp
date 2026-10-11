@@ -2,9 +2,6 @@
 #include "WeightsIO.h"
 #include <cmath>
 #include <random>
-#include <fstream>
-#include <chrono>
-#include <iostream>
 
 NeuralNetwork::NeuralNetwork() : NeuralNetwork(0.01) {}
 
@@ -74,10 +71,6 @@ Eigen::VectorXd NeuralNetwork::softmax(const Eigen::VectorXd& z) {
 
 double NeuralNetwork::relu(double x) {
     return std::max(0.0, x);
-}
-
-double NeuralNetwork::reluDerivative(double x) {
-    return x > 0.0 ? 1.0 : 0.0;
 }
 
 void NeuralNetwork::backward(const Eigen::VectorXd& input,
@@ -205,17 +198,6 @@ void NeuralNetwork::setLearningRate(double lr) {
         throw std::runtime_error("Learning rate must be positive, got " + std::to_string(lr));
     }
     learningRate = lr;
-}
-
-double NeuralNetwork::getLearningRate() const {
-    return learningRate;
-}
-
-void NeuralNetwork::setMomentum(double m) {
-    if (m < 0.0 || m >= 1.0) {
-        throw std::runtime_error("Momentum must be in range [0, 1), got " + std::to_string(m));
-    }
-    momentum = m;
 }
 
 double NeuralNetwork::testAccuracy(const std::vector<std::pair<Eigen::VectorXd, int>>& testData) {

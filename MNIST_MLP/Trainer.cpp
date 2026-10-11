@@ -1,9 +1,6 @@
 #include "Trainer.h"
 #include <QThread>
 #include <QDebug>
-#include <QMutexLocker>
-#include <iostream>
-#include <iomanip>
 
 Trainer::Trainer(NeuralNetwork* net, DataLoader* loader, QObject* parent)
     : QObject(parent)
@@ -19,9 +16,6 @@ Trainer::Trainer(NeuralNetwork* net, DataLoader* loader, QObject* parent)
         throw std::runtime_error("Network or DataLoader is null");
     }
 
-    trainLossHistory.clear();
-    trainAccuracyHistory.clear();
-    testAccuracyHistory.clear();
 }
 
 void Trainer::stop()
@@ -57,15 +51,7 @@ void Trainer::train(int epochs)
         dataLoader->shuffleTrainData();
         const auto& trainData = dataLoader->getTrainData();
 
-        {
-            QMutexLocker locker(&statsMutex);
-            trainLossHistory.clear();
-            trainAccuracyHistory.clear();
-            testAccuracyHistory.clear();
-            trainLossHistory.reserve(numEpochs);
-            trainAccuracyHistory.reserve(numEpochs);
-            testAccuracyHistory.reserve(numEpochs);
-        }
+        double lastTestAccuracy = 0.0;
 
         for (int epoch = 0; epoch < numEpochs; ++epoch) {
             if (stopRequested.load()) {
@@ -109,12 +95,6 @@ void Trainer::train(int epochs)
             double avgLoss = totalLoss / totalSamples;
             double trainAccuracy = static_cast<double>(correctPredictions) / totalSamples;
 
-            {
-                QMutexLocker locker(&statsMutex);
-                trainLossHistory.push_back(avgLoss);
-                trainAccuracyHistory.push_back(trainAccuracy);
-            }
-
             double testAccuracy = 0.0;
             try {
                 testAccuracy = test();
@@ -123,10 +103,7 @@ void Trainer::train(int epochs)
                 testAccuracy = 0.0;
             }
 
-            {
-                QMutexLocker locker(&statsMutex);
-                testAccuracyHistory.push_back(testAccuracy);
-            }
+            lastTestAccuracy = testAccuracy;
 
             emit progressUpdate(epoch, avgLoss, trainAccuracy, testAccuracy);
 
@@ -138,15 +115,7 @@ void Trainer::train(int epochs)
                 .arg(static_cast<int>(testAccuracy * 100));
         }
 
-        double finalAccuracy = 0.0;
-        {
-            QMutexLocker locker(&statsMutex);
-            if (!testAccuracyHistory.empty()) {
-                finalAccuracy = testAccuracyHistory.back();
-            }
-        }
-
-        emit trainingFinished(finalAccuracy);
+        emit trainingFinished(lastTestAccuracy);
 
         qDebug() << "Trainer: Training completed successfully";
 
@@ -174,33 +143,6 @@ double Trainer::test()
     }
 
     return network->testAccuracy(testSamples);
-}
-
-const std::vector<double>& Trainer::getTrainLossHistory() const
-{
-    QMutexLocker locker(&statsMutex);
-    if (trainLossHistory.empty()) {
-        throw std::runtime_error("Training history is empty");
-    }
-    return trainLossHistory;
-}
-
-const std::vector<double>& Trainer::getTrainAccuracyHistory() const
-{
-    QMutexLocker locker(&statsMutex);
-    if (trainAccuracyHistory.empty()) {
-        throw std::runtime_error("Training accuracy history is empty");
-    }
-    return trainAccuracyHistory;
-}
-
-const std::vector<double>& Trainer::getTestAccuracyHistory() const
-{
-    QMutexLocker locker(&statsMutex);
-    if (testAccuracyHistory.empty()) {
-        throw std::runtime_error("Test accuracy history is empty");
-    }
-    return testAccuracyHistory;
 }
 
 void Trainer::updateLearningRate(int currentEpoch)

@@ -31,8 +31,6 @@ public:
     Eigen::VectorXd getProcessedImage() const;
     QImage getCanvas() const;
 
-    void setPenSize(int size);
-
 protected:
     void paintEvent(QPaintEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
