@@ -72,13 +72,15 @@ MainWindow::MainWindow(QWidget* parent)
 MainWindow::~MainWindow()
 {
     if (trainingThread && trainingThread->isRunning()) {
-        stopTraining();
+        trainer->stop();
+        trainingThread->quit();
+        trainingThread->wait();
     }
 
+    delete trainer;
     delete network;
     delete trainNetwork;
     delete dataLoader;
-    
 
     if (arduinoPort && arduinoPort->isOpen()) {
         arduinoPort->close();
@@ -186,7 +188,7 @@ void MainWindow::setupUI() {
     statusLabel->setFont(QFont("Arial", 10, QFont::Bold));
     infoLayout->addWidget(statusLabel);
 
-    QLabel* statusValue = new QLabel("Not trained", this);
+    statusValue = new QLabel("Not trained", this);
     statusValue->setStyleSheet("QLabel { color: #BF5B4D; }");
     infoLayout->addWidget(statusValue);
 
@@ -194,7 +196,7 @@ void MainWindow::setupUI() {
     dataLabel->setFont(QFont("Arial", 10, QFont::Bold));
     infoLayout->addWidget(dataLabel);
 
-    QLabel* dataValue = new QLabel("No data loaded", this);
+    dataValue = new QLabel("No data loaded", this);
     infoLayout->addWidget(dataValue);
 
     controlLayout->addWidget(infoGroup);
@@ -345,12 +347,41 @@ void MainWindow::createConnections() {
 }
 
 void MainWindow::updateUIState() {
-    bool hasWeights = weightsLoaded || isTrained;
+    const bool hasWeights = weightsLoaded || isTrained;
 
     testButton->setEnabled(hasWeights);
     recognizeButton->setEnabled(hasWeights && !drawingArea->getCanvas().isNull());
 
-    QString status = isTrained ? "Trained" : (weightsLoaded ? "Weights Loaded" : "Not trained");
+    QString status;
+    QString statusColor;
+    if (isTrained) {
+        status = "Trained";
+        statusColor = "#5A8F5A";
+    }
+    else if (weightsLoaded) {
+        status = "Weights Loaded";
+        statusColor = "#C48A3B";
+    }
+    else {
+        status = "Not trained";
+        statusColor = "#BF5B4D";
+    }
+
+    statusValue->setText(status);
+    statusValue->setStyleSheet(QString("QLabel { color: %1; }").arg(statusColor));
+
+    const size_t trainSize = dataLoader->getTrainSize();
+    const size_t testSize = dataLoader->getTestSize();
+    if (trainSize == 0) {
+        dataValue->setText("No data loaded");
+    }
+    else if (testSize == 0) {
+        dataValue->setText(QString("%1 train samples").arg(trainSize));
+    }
+    else {
+        dataValue->setText(QString("%1 train / %2 test samples").arg(trainSize).arg(testSize));
+    }
+
     setWindowTitle(QString("Digit Recognizer - [%1]").arg(status));
 }
 
@@ -474,6 +505,7 @@ void MainWindow::onTestClicked() {
             .arg(static_cast<int>(accuracy * 100))
             .arg(static_cast<int>(accuracy * 10000))
             .arg(static_cast<int>((1 - accuracy) * 10000)));
+        updateUIState();
 
     }
     catch (const std::exception& e) {
@@ -602,9 +634,8 @@ void MainWindow::onTrainingFinished(double finalAccuracy)
 
     if (finalAccuracy > 0.001) {
         
-        trainNetwork->saveWeights("temp_weights.bin");
-        network->loadWeights("temp_weights.bin");
-        network->saveWeights("weights.bin");
+        trainNetwork->saveWeights("weights.bin");
+        network->loadWeights("weights.bin");
 
         isTrained = true;
         weightsLoaded = true;

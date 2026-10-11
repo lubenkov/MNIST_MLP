@@ -26,6 +26,8 @@ private:
     DrawingArea* drawingArea;
     QLabel* resultLabel;
     QLabel* confidenceLabel;
+    QLabel* statusValue;
+    QLabel* dataValue;
     QPushButton* trainButton;
     QPushButton* loadWeightsButton;
     QPushButton* testButton;
