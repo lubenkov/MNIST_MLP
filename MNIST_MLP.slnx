@@ -1,0 +1,6 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="MNIST_MLP/MNIST_MLP.vcxproj" Id="c295f947-c6d8-4c35-9f05-04cfe628c429" />
+</Solution>

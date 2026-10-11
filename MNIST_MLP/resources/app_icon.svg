@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F5F4ED"/>
+      <stop offset="1" stop-color="#EFEDE3"/>
+    </linearGradient>
+  </defs>
+
+  <!-- фон -->
+  <rect x="8" y="8" width="240" height="240" rx="48" fill="url(#bg)" stroke="#E0DDD0" stroke-width="4"/>
+
+  <!-- рукописный мазок (плавная кривая) -->
+  <path d="M 60 168 C 70 90, 130 60, 150 100 C 165 130, 120 140, 110 120 C 100 100, 150 90, 170 130 C 185 160, 160 190, 130 185"
+        fill="none" stroke="#E3C4B4" stroke-width="10" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- тот же мазок, но "оцифрованный" в пиксели поверх -->
+  <g fill="#CC785C">
+    <rect x="58" y="150" width="20" height="20" rx="4"/>
+    <rect x="78" y="118" width="20" height="20" rx="4"/>
+    <rect x="98" y="90" width="20" height="20" rx="4"/>
+    <rect x="126" y="78" width="20" height="20" rx="4"/>
+    <rect x="150" y="98" width="20" height="20" rx="4"/>
+    <rect x="140" y="122" width="20" height="20" rx="4"/>
+    <rect x="160" y="146" width="20" height="20" rx="4"/>
+    <rect x="150" y="170" width="20" height="20" rx="4"/>
+    <rect x="122" y="178" width="20" height="20" rx="4"/>
+  </g>
+
+  <!-- узлы нейросети снизу -->
+  <g stroke="#CBA593" stroke-width="3">
+    <line x1="78" y1="210" x2="128" y2="222"/>
+    <line x1="128" y1="222" x2="178" y2="210"/>
+  </g>
+  <circle cx="78" cy="210" r="7" fill="#C1673F"/>
+  <circle cx="128" cy="222" r="7" fill="#C1673F"/>
+  <circle cx="178" cy="210" r="7" fill="#C1673F"/>
+</svg>

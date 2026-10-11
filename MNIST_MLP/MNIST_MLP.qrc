@@ -1,0 +1,4 @@
+<RCC>
+    <qresource prefix="MNIST_MLP">
+    </qresource>
+</RCC>
