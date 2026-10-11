@@ -1,4 +1,5 @@
 #include "WeightsIO.h"
+#include "NetworkConfig.h"
 #include <fstream>
 #include <cstdint>
 
@@ -20,24 +21,24 @@ bool WeightsIO::saveBinary(const std::string& filename,
     const Eigen::VectorXd& b1,
     const Eigen::MatrixXd& W2,
     const Eigen::VectorXd& b2) {
-    if (W1.rows() != 256 || W1.cols() != 784) {
+    if (W1.rows() != NetworkConfig::kHiddenSize || W1.cols() != NetworkConfig::kInputSize) {
         throw std::runtime_error("W1 has invalid dimensions: " +
             std::to_string(W1.rows()) + "x" + std::to_string(W1.cols()) +
             ", expected 256x784");
     }
 
-    if (b1.size() != 256) {
+    if (b1.size() != NetworkConfig::kHiddenSize) {
         throw std::runtime_error("b1 has invalid size: " +
             std::to_string(b1.size()) + ", expected 256");
     }
 
-    if (W2.rows() != 10 || W2.cols() != 256) {
+    if (W2.rows() != NetworkConfig::kOutputSize || W2.cols() != NetworkConfig::kHiddenSize) {
         throw std::runtime_error("W2 has invalid dimensions: " +
             std::to_string(W2.rows()) + "x" + std::to_string(W2.cols()) +
             ", expected 10x256");
     }
 
-    if (b2.size() != 10) {
+    if (b2.size() != NetworkConfig::kOutputSize) {
         throw std::runtime_error("b2 has invalid size: " +
             std::to_string(b2.size()) + ", expected 10");
     }
@@ -122,27 +123,27 @@ bool WeightsIO::loadBinary(const std::string& filename,
         throw std::runtime_error("Failed to read dimensions from file: " + filename);
     }
 
-    if (rows1 != 256 || cols1 != 784) {
+    if (rows1 != NetworkConfig::kHiddenSize || cols1 != NetworkConfig::kInputSize) {
         file.close();
         throw std::runtime_error("W1 dimension mismatch in file: got " +
             std::to_string(rows1) + "x" + std::to_string(cols1) +
             ", expected 256x784");
     }
 
-    if (sizeB1 != 256) {
+    if (sizeB1 != NetworkConfig::kHiddenSize) {
         file.close();
         throw std::runtime_error("b1 size mismatch in file: got " +
             std::to_string(sizeB1) + ", expected 256");
     }
 
-    if (rows2 != 10 || cols2 != 256) {
+    if (rows2 != NetworkConfig::kOutputSize || cols2 != NetworkConfig::kHiddenSize) {
         file.close();
         throw std::runtime_error("W2 dimension mismatch in file: got " +
             std::to_string(rows2) + "x" + std::to_string(cols2) +
             ", expected 10x256");
     }
 
-    if (sizeB2 != 10) {
+    if (sizeB2 != NetworkConfig::kOutputSize) {
         file.close();
         throw std::runtime_error("b2 size mismatch in file: got " +
             std::to_string(sizeB2) + ", expected 10");

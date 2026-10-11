@@ -4,20 +4,18 @@
 #include <Eigen/Dense>
 #include <vector>
 #include <string>
-#include <utility>
 
-
-struct MNISTSample{
-    Eigen::VectorXd image;  
-    int label;              
+struct MNISTSample {
+    Eigen::VectorXd image;
+    int label;
 };
-
 
 class DataLoader {
 private:
     std::vector<MNISTSample> trainData;
     std::vector<MNISTSample> testData;
 
+    void loadFromFile(const std::string& filename, std::vector<MNISTSample>& target);
     Eigen::VectorXd normalizeImage(const std::vector<double>& pixels);
     std::vector<double> parseLine(const std::string& line);
 
@@ -29,7 +27,6 @@ public:
     bool loadTestData(const std::string& filename);
 
     Eigen::VectorXd labelToOneHot(int label) const;
-    int oneHotToLabel(const Eigen::VectorXd& oneHot) const;
 
     const std::vector<MNISTSample>& getTrainData() const;
     const std::vector<MNISTSample>& getTestData() const;
@@ -39,4 +36,4 @@ public:
     void shuffleTrainData();
 };
 
-#endif 
+#endif

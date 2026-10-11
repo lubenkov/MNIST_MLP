@@ -4,6 +4,7 @@
 #include <Eigen/Dense>
 #include <vector>
 #include <random>
+#include <utility>
 
 class NeuralNetwork {
 private:
@@ -33,6 +34,7 @@ public:
     Eigen::VectorXd predict(const Eigen::VectorXd& input);
     Eigen::VectorXd softmax(const Eigen::VectorXd& z);
     double relu(double x);
+    static int argmax(const Eigen::VectorXd& values);
 
     void backward(const Eigen::VectorXd& input,
         const Eigen::VectorXd& target,

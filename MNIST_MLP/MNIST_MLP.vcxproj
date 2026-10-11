@@ -118,6 +118,7 @@
   <ItemGroup>
     <ClInclude Include="DataLoader.h" />
     <QtMoc Include="DrawingArea.h" />
+    <ClInclude Include="NetworkConfig.h" />
     <ClInclude Include="NeuralNetwork.h" />
     <ClInclude Include="resource.h" />
     <QtMoc Include="Trainer.h" />

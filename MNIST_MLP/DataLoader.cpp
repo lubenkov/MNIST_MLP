@@ -1,4 +1,5 @@
 #include "DataLoader.h"
+#include "NetworkConfig.h"
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -6,13 +7,13 @@
 #include <chrono>
 #include <cctype>
 
-bool DataLoader::loadTrainData(const std::string& filename) {
+void DataLoader::loadFromFile(const std::string& filename, std::vector<MNISTSample>& target) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        throw std::runtime_error("Cannot open training data file: " + filename);
+        throw std::runtime_error("Cannot open data file: " + filename);
     }
 
-    trainData.clear();
+    target.clear();
     std::string line;
     bool isDataSection = false;
 
@@ -47,115 +48,46 @@ bool DataLoader::loadTrainData(const std::string& filename) {
 
         std::vector<double> values = parseLine(line);
 
-        if (values.empty()) {
-            continue;
-        }
-
-        if (values.size() != 785) {
+        if (values.size() != NetworkConfig::kInputSize + 1) {
             continue;
         }
 
         MNISTSample sample;
         sample.label = static_cast<int>(values[0]);
 
-        if (sample.label < 0 || sample.label > 9) {
+        if (sample.label < 0 || sample.label >= NetworkConfig::kOutputSize) {
             continue;
         }
 
         std::vector<double> pixels(values.begin() + 1, values.end());
         sample.image = normalizeImage(pixels);
 
-        trainData.push_back(sample);
+        target.push_back(sample);
     }
 
-    file.close();
-
-    if (trainData.empty()) {
-        throw std::runtime_error("No training data loaded from file: " + filename);
+    if (target.empty()) {
+        throw std::runtime_error("No data loaded from file: " + filename);
     }
+}
 
+bool DataLoader::loadTrainData(const std::string& filename) {
+    loadFromFile(filename, trainData);
     return true;
 }
 
 bool DataLoader::loadTestData(const std::string& filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        throw std::runtime_error("Cannot open test data file: " + filename);
-    }
-
-    testData.clear();
-    std::string line;
-    bool isDataSection = false;
-
-    while (std::getline(file, line)) {
-        if (line.empty()) continue;
-
-        line.erase(0, line.find_first_not_of(" \t\r\n"));
-        line.erase(line.find_last_not_of(" \t\r\n") + 1);
-
-        if (line.empty()) continue;
-
-        if (!isDataSection) {
-            bool hasLetters = false;
-            for (char c : line) {
-                if (std::isalpha(static_cast<unsigned char>(c))) {
-                    hasLetters = true;
-                    break;
-                }
-            }
-
-            if (hasLetters) {
-                continue;
-            }
-
-            bool hasWhitespace = line.find_first_of(" \t") != std::string::npos;
-            if (!hasWhitespace) {
-                continue;
-            }
-
-            isDataSection = true;
-        }
-
-        std::vector<double> values = parseLine(line);
-
-        if (values.empty()) {
-            continue;
-        }
-
-        if (values.size() != 785) {
-            continue;
-        }
-
-        MNISTSample sample;
-        sample.label = static_cast<int>(values[0]);
-
-        if (sample.label < 0 || sample.label > 9) {
-            continue;
-        }
-
-        std::vector<double> pixels(values.begin() + 1, values.end());
-        sample.image = normalizeImage(pixels);
-
-        testData.push_back(sample);
-    }
-
-    file.close();
-
-    if (testData.empty()) {
-        throw std::runtime_error("No test data loaded from file: " + filename);
-    }
-
+    loadFromFile(filename, testData);
     return true;
 }
 
 Eigen::VectorXd DataLoader::normalizeImage(const std::vector<double>& pixels) {
-    if (pixels.size() != 784) {
+    if (pixels.size() != NetworkConfig::kInputSize) {
         throw std::runtime_error("Expected 784 pixels, got " + std::to_string(pixels.size()));
     }
 
-    Eigen::VectorXd normalized(784);
+    Eigen::VectorXd normalized(NetworkConfig::kInputSize);
 
-    for (int i = 0; i < 784; ++i) {
+    for (int i = 0; i < NetworkConfig::kInputSize; ++i) {
         double pixel = pixels[i];
 
         if (pixel >= 0.0 && pixel <= 1.0) {
@@ -216,26 +148,9 @@ Eigen::VectorXd DataLoader::labelToOneHot(int label) const {
         throw std::runtime_error("Invalid label for one-hot encoding: " + std::to_string(label));
     }
 
-    Eigen::VectorXd oneHot = Eigen::VectorXd::Zero(10);
+    Eigen::VectorXd oneHot = Eigen::VectorXd::Zero(NetworkConfig::kOutputSize);
     oneHot(label) = 1.0;
     return oneHot;
-}
-
-int DataLoader::oneHotToLabel(const Eigen::VectorXd& oneHot) const {
-    if (oneHot.size() != 10) {
-        throw std::runtime_error("oneHot vector size must be 10, got " + std::to_string(oneHot.size()));
-    }
-
-    int maxIndex = 0;
-    double maxValue = oneHot(0);
-    for (int i = 1; i < 10; ++i) {
-        if (oneHot(i) > maxValue) {
-            maxValue = oneHot(i);
-            maxIndex = i;
-        }
-    }
-
-    return maxIndex;
 }
 
 const std::vector<MNISTSample>& DataLoader::getTrainData() const {

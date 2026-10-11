@@ -1,4 +1,5 @@
 #include "DrawingArea.h"
+#include "NetworkConfig.h"
 #include <QPainter>
 #include <QPen>
 #include <QBrush>
@@ -36,7 +37,7 @@ Eigen::VectorXd DrawingArea::getProcessedImage() const {
 
     Eigen::VectorXd image = preprocessImage();
 
-    if (image.size() != 784) {
+    if (image.size() != NetworkConfig::kInputSize) {
         throw std::runtime_error("Processed image has invalid size: " +
             std::to_string(image.size()) + ", expected 784");
     }
@@ -45,7 +46,7 @@ Eigen::VectorXd DrawingArea::getProcessedImage() const {
 }
 
 Eigen::VectorXd DrawingArea::imageToVector() const {
-    Eigen::VectorXd vec(784);
+    Eigen::VectorXd vec(NetworkConfig::kInputSize);
 
     if (canvas.width() != 280 || canvas.height() != 280) {
         throw std::runtime_error("Canvas has invalid size: " +
@@ -102,7 +103,7 @@ Eigen::VectorXd DrawingArea::preprocessImage() const {
     }
 
     if (!hasPixel) {
-        return Eigen::VectorXd::Zero(784);
+        return Eigen::VectorXd::Zero(NetworkConfig::kInputSize);
     }
 
     int width = maxX - minX + 1;

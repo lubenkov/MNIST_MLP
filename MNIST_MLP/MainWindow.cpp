@@ -565,14 +565,8 @@ void MainWindow::onRecognizeClicked() {
         Eigen::VectorXd image = drawingArea->getProcessedImage();
         Eigen::VectorXd output = network->predict(image);
 
-        int digit = 0;
-        double maxProb = output(0);
-        for (int i = 1; i < 10; ++i) {
-            if (output(i) > maxProb) {
-                maxProb = output(i);
-                digit = i;
-            }
-        }
+        const int digit = NeuralNetwork::argmax(output);
+        const double maxProb = output(digit);
 
         showResult(QString::number(digit), maxProb);
         sendDigitToArduino(digit);

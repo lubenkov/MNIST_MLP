@@ -79,7 +79,7 @@ void Trainer::train(int epochs)
                 totalLoss += loss;
 
                 Eigen::VectorXd prediction = network->predict(sample.image);
-                int predictedLabel = dataLoader->oneHotToLabel(prediction);
+                int predictedLabel = NeuralNetwork::argmax(prediction);
                 if (predictedLabel == sample.label) {
                     correctPredictions++;
                 }
