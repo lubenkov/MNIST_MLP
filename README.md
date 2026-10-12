@@ -9,6 +9,20 @@ A handwritten digit recogniser for Windows, built with C++, Qt 5.12.12 and Eigen
 ![Platform](https://img.shields.io/badge/platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)
 
+## Preview
+
+<p align="center">
+  <img
+    src="digit-recognizer.png"
+    width="850"
+    alt="The app predicts a hand-drawn 5 as 5 with 99% confidence."
+  />
+</p>
+
+<p align="center">
+  <em>Inference with loaded weights: handwritten 5 → 5, 99% confidence.</em>
+</p>
+
 ## About
 
 The network is a multilayer perceptron, 784 → 256 → 10, implemented from scratch on top of Eigen: ReLU in the hidden layer, softmax over the ten digit classes, He initialisation, and stochastic gradient descent with momentum and L2 regularisation. Training runs on a worker thread, so the window stays responsive while the weights are updated, and the learning rate decays from 0.01 to 0.001 after the tenth epoch.
