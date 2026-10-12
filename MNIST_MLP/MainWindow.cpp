@@ -40,7 +40,7 @@ MainWindow::MainWindow(QWidget* parent)
             }, Qt::QueuedConnection);
 
         
-        setWindowIcon(QIcon("resources/app_icon.svg"));
+        setWindowIcon(QIcon("resources/app_icon.png"));
 
         setupUI();
         createConnections();

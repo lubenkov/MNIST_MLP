@@ -1,4 +1,5 @@
 <RCC>
-    <qresource prefix="MNIST_MLP">
+    <qresource prefix="/">
+        <file>resources/app_icon.png</file>
     </qresource>
 </RCC>
