@@ -10,7 +10,6 @@
 #include <QProgressBar>
 #include <QMessageBox>
 #include <QStatusBar>
-#include <QMouseEvent>
 #include <QComboBox>
 #include <QSerialPort>
 #include "Trainer.h"  
@@ -34,13 +33,6 @@ private:
     QPushButton* recognizeButton;
     QProgressBar* progressBar;
     QStatusBar* statusBar;
-    
-    QWidget* titleBar;
-    QLabel* titleIconLabel;
-    QLabel* titleTextLabel;
-    QPushButton* minimizeButton;
-    QPushButton* maximizeButton;
-    QPushButton* closeButton;
 
     QComboBox* arduinoPortCombo;
     QPushButton* arduinoRefreshButton;
@@ -59,8 +51,6 @@ private:
     bool weightsLoaded;
 
     void setupUI();
-    void setupTitleBar(QVBoxLayout* outerLayout);
-    void updateMaximizeIcon();
     void createConnections();
     void updateUIState();
     void showResult(const QString& result, double confidence);
@@ -68,15 +58,8 @@ private:
     void refreshArduinoPorts();
     void sendDigitToArduino(int digit);
 
-    Qt::Edges edgeAt(const QPoint& pos) const;
-
 protected:
     void closeEvent(QCloseEvent* event) override;
-    void mousePressEvent(QMouseEvent* event) override;
-    void mouseMoveEvent(QMouseEvent* event) override;
-    void mouseReleaseEvent(QMouseEvent* event) override;
-    void changeEvent(QEvent* event) override;
-    bool eventFilter(QObject* watched, QEvent* event) override;
 
 private slots:
     void onTrainClicked();

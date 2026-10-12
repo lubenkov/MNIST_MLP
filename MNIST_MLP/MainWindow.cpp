@@ -5,16 +5,8 @@
 #include <QStyle>
 #include <QDebug>
 #include <QIcon>
-#include <QWindow>
 #include <QSerialPortInfo>
 #include <algorithm>
-
-#ifdef _WIN32
-#ifndef NOMINMAX
-#define NOMINMAX 
-#endif
-#include <windows.h>
-#endif
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -50,9 +42,6 @@ MainWindow::MainWindow(QWidget* parent)
         
         setWindowIcon(QIcon("resources/app_icon.svg"));
 
-        setWindowFlag(Qt::FramelessWindowHint, true);
-        setMouseTracking(true);
-
         setupUI();
         createConnections();
         updateUIState();
@@ -85,16 +74,8 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::setupUI() {
-    QWidget* wrapper = new QWidget(this);
-    setCentralWidget(wrapper);
-    QVBoxLayout* wrapperLayout = new QVBoxLayout(wrapper);
-    wrapperLayout->setContentsMargins(0, 0, 0, 0);
-    wrapperLayout->setSpacing(0);
-
-    setupTitleBar(wrapperLayout);
-
-    QWidget* centralWidget = new QWidget(wrapper);
-    wrapperLayout->addWidget(centralWidget, 1);
+    QWidget* centralWidget = new QWidget(this);
+    setCentralWidget(centralWidget);
 
     QHBoxLayout* mainLayout = new QHBoxLayout(centralWidget);
 
@@ -207,7 +188,7 @@ void MainWindow::setupUI() {
 
     arduinoRefreshButton = new QPushButton("⟳", this);
     arduinoRefreshButton->setFixedWidth(36);
-    arduinoRefreshButton->setToolTip("Обновить список портов");
+    arduinoRefreshButton->setToolTip("Refresh port list");
     arduinoPortLayout->addWidget(arduinoRefreshButton);
 
     arduinoLayout->addLayout(arduinoPortLayout);
@@ -231,72 +212,6 @@ void MainWindow::setupUI() {
     refreshArduinoPorts();
 }
 
-void MainWindow::setupTitleBar(QVBoxLayout* outerLayout) {
-    titleBar = new QWidget(this);
-    titleBar->setFixedHeight(40);
-    titleBar->setObjectName("customTitleBar");
-    titleBar->setStyleSheet(
-        "QWidget#customTitleBar { background-color: #F0EEE6; border-bottom: 1px solid #E0DDD0; }");
-    titleBar->installEventFilter(this);
-
-    QHBoxLayout* titleLayout = new QHBoxLayout(titleBar);
-    titleLayout->setContentsMargins(12, 0, 0, 0);
-    titleLayout->setSpacing(8);
-
-    titleIconLabel = new QLabel(titleBar);
-    titleIconLabel->setPixmap(windowIcon().pixmap(20, 20));
-    titleIconLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
-    titleLayout->addWidget(titleIconLabel);
-
-    titleTextLabel = new QLabel(windowTitle(), titleBar);
-    titleTextLabel->setStyleSheet("QLabel { color: #3D3929; font-weight: 600; background: transparent; }");
-    titleTextLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
-    titleLayout->addWidget(titleTextLabel);
-    connect(this, &QWidget::windowTitleChanged, titleTextLabel, &QLabel::setText);
-
-    titleLayout->addStretch();
-
-    const QString capBtnStyle =
-        "QPushButton { background-color: transparent; border: none; border-radius: 0px; "
-        "color: #3D3929; font-weight: 600; padding: 0px; }"
-        "QPushButton:hover { background-color: #E3DFD1; }"
-        "QPushButton:pressed { background-color: #D9D5C7; }";
-
-    minimizeButton = new QPushButton("—", titleBar);
-    minimizeButton->setFixedSize(46, 40);
-    minimizeButton->setStyleSheet(capBtnStyle);
-    connect(minimizeButton, &QPushButton::clicked, this, &MainWindow::showMinimized);
-    titleLayout->addWidget(minimizeButton);
-
-    maximizeButton = new QPushButton("□", titleBar);
-    maximizeButton->setFixedSize(46, 40);
-    maximizeButton->setStyleSheet(capBtnStyle);
-    connect(maximizeButton, &QPushButton::clicked, this, [this]() {
-        if (isMaximized()) {
-            showNormal();
-        }
-        else {
-            showMaximized();
-        }
-        updateMaximizeIcon();
-        });
-    titleLayout->addWidget(maximizeButton);
-
-    closeButton = new QPushButton("✕", titleBar);
-    closeButton->setFixedSize(46, 40);
-    closeButton->setStyleSheet(capBtnStyle +
-        "QPushButton:hover { background-color: #BF5B4D; color: #FAF9F5; }"
-        "QPushButton:pressed { background-color: #A3493D; color: #FAF9F5; }");
-    connect(closeButton, &QPushButton::clicked, this, &MainWindow::close);
-    titleLayout->addWidget(closeButton);
-
-    outerLayout->addWidget(titleBar);
-}
-
-void MainWindow::updateMaximizeIcon() {
-    maximizeButton->setText(isMaximized() ? "❐" : "□");
-}
-
 void MainWindow::refreshArduinoPorts() {
     QString previouslySelected = arduinoPortCombo->currentText();
     arduinoPortCombo->clear();
@@ -307,7 +222,7 @@ void MainWindow::refreshArduinoPorts() {
     }
 
     if (ports.isEmpty()) {
-        arduinoPortCombo->addItem("Нет доступных портов");
+        arduinoPortCombo->addItem("No ports available");
         arduinoConnectButton->setEnabled(false);
     }
     else {
@@ -516,7 +431,7 @@ void MainWindow::onArduinoConnectClicked() {
     }
 
     QString portName = arduinoPortCombo->currentText();
-    if (portName.isEmpty() || portName == "Нет доступных портов") {
+    if (portName.isEmpty() || portName == "No ports available") {
         showError("Arduino", "No serial port selected. Connect the Arduino and press refresh.");
         return;
     }
@@ -696,129 +611,4 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
     event->accept();
     QMainWindow::closeEvent(event);
-}
-
-namespace {
-    constexpr int kResizeMargin = 6; 
-}
-
-Qt::Edges MainWindow::edgeAt(const QPoint& pos) const {
-    Qt::Edges edges;
-    if (isMaximized()) {
-        return edges; 
-    }
-    if (pos.x() <= kResizeMargin) edges |= Qt::LeftEdge;
-    if (pos.x() >= width() - kResizeMargin) edges |= Qt::RightEdge;
-    if (pos.y() <= kResizeMargin) edges |= Qt::TopEdge;
-    if (pos.y() >= height() - kResizeMargin) edges |= Qt::BottomEdge;
-    return edges;
-}
-
-void MainWindow::mousePressEvent(QMouseEvent* event) {
-    if (event->button() == Qt::LeftButton) {
-        Qt::Edges edges = edgeAt(event->pos());
-        if (edges) {
-#ifdef _WIN32
-            int wmszEdge = 0;
-            bool left = edges & Qt::LeftEdge;
-            bool right = edges & Qt::RightEdge;
-            bool top = edges & Qt::TopEdge;
-            bool bottom = edges & Qt::BottomEdge;
-
-            if (left && top) wmszEdge = WMSZ_TOPLEFT;
-            else if (right && top) wmszEdge = WMSZ_TOPRIGHT;
-            else if (left && bottom) wmszEdge = WMSZ_BOTTOMLEFT;
-            else if (right && bottom) wmszEdge = WMSZ_BOTTOMRIGHT;
-            else if (left) wmszEdge = WMSZ_LEFT;
-            else if (right) wmszEdge = WMSZ_RIGHT;
-            else if (top) wmszEdge = WMSZ_TOP;
-            else if (bottom) wmszEdge = WMSZ_BOTTOM;
-
-            if (wmszEdge != 0) {
-                ReleaseCapture();
-                SendMessage(reinterpret_cast<HWND>(winId()), WM_SYSCOMMAND, SC_SIZE + wmszEdge, 0);
-                event->accept();
-                return;
-            }
-#else
-            if (windowHandle()) {
-                windowHandle()->startSystemResize(edges);
-                event->accept();
-                return;
-            }
-#endif
-        }
-    }
-    QMainWindow::mousePressEvent(event);
-}
-
-void MainWindow::mouseMoveEvent(QMouseEvent* event) {
-    if (!(event->buttons() & Qt::LeftButton)) {
-        Qt::Edges edges = edgeAt(event->pos());
-        bool diag1 = (edges & Qt::LeftEdge) && (edges & Qt::TopEdge);
-        bool diag2 = (edges & Qt::RightEdge) && (edges & Qt::BottomEdge);
-        bool diag3 = (edges & Qt::RightEdge) && (edges & Qt::TopEdge);
-        bool diag4 = (edges & Qt::LeftEdge) && (edges & Qt::BottomEdge);
-
-        if (diag1 || diag2) {
-            setCursor(Qt::SizeFDiagCursor);
-        }
-        else if (diag3 || diag4) {
-            setCursor(Qt::SizeBDiagCursor);
-        }
-        else if (edges & Qt::LeftEdge || edges & Qt::RightEdge) {
-            setCursor(Qt::SizeHorCursor);
-        }
-        else if (edges & Qt::TopEdge || edges & Qt::BottomEdge) {
-            setCursor(Qt::SizeVerCursor);
-        }
-        else {
-            unsetCursor();
-        }
-    }
-    QMainWindow::mouseMoveEvent(event);
-}
-
-void MainWindow::mouseReleaseEvent(QMouseEvent* event) {
-    QMainWindow::mouseReleaseEvent(event);
-}
-
-void MainWindow::changeEvent(QEvent* event) {
-    QMainWindow::changeEvent(event);
-    if (event->type() == QEvent::WindowStateChange) {
-        updateMaximizeIcon();
-    }
-}
-
-bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
-    if (watched == titleBar) {
-        if (event->type() == QEvent::MouseButtonPress) {
-            QMouseEvent* me = static_cast<QMouseEvent*>(event);
-            if (me->button() == Qt::LeftButton) {
-#ifdef _WIN32
-                ReleaseCapture();
-                SendMessage(reinterpret_cast<HWND>(winId()), WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
-#else
-                if (windowHandle()) {
-                    windowHandle()->startSystemMove();
-                }
-#endif
-                return true;
-            }
-        }
-        else if (event->type() == QEvent::MouseButtonDblClick) {
-            QMouseEvent* me = static_cast<QMouseEvent*>(event);
-            if (me->button() == Qt::LeftButton) {
-                if (isMaximized()) {
-                    showNormal();
-                }
-                else {
-                    showMaximized();
-                }
-                updateMaximizeIcon();
-                return true;
-            }
-        }
-    }
-    return QMainWindow::eventFilter(watched, event);
 }
